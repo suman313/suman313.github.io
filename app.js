@@ -1,91 +1,125 @@
-//first copy the existing data of localStorage in a new array
-let getData = window.localStorage.getItem("library")
-if(getData != null)
-getData = JSON.parse(getData)
-else
-getData = []
-function Book(title,author,pages,read){
-this.title = title
-this.author = author
-this.pages = pages
-this.read = read
-}
-const addObjects = (title,author,pages,read)=>{
-    if(read){
-      read = "Read"
+class Calculate{
+    constructor(previousTextOperand, currentTextOperand){
+        this.previousTextOperand = previousTextOperand;
+        this.currentTextOperand = currentTextOperand;
+        this.clear();
     }
-    else
-    read = "Not Read"
-    const instanceOfBook = new Book(title,author,pages,read)
-    getData.push(instanceOfBook)
-    var storedInLocal = window.localStorage;
-    let myLibrary = JSON.stringify(getData);
-    storedInLocal.setItem("library",myLibrary);
-    createTable();
-}
-let theFormData = document.getElementById("bookInfo")
-let onClick  = ()=>{
-    let title = theFormData.elements["title"].value
-    let author = theFormData.elements["author"].value
-    let pages = theFormData.elements["pages"].value
-    let read = document.querySelector(".form-check-input:checked")
-    let checked = false
-    if(read)
-    checked =true
-    addObjects(title,author,pages,checked)
-}
 
-//For the submit button
+    clear(){
+        this.currentOperand = ''
+        this.previousOperand = ''
+        this.operation = undefined
+    }
 
-document.getElementById("bookInfo").addEventListener('submit',function(event){
-    event.preventDefault()
-    onClick();
-    parent.document.getElementById("bookInfo").reset()
-    document.getElementById("formPopupBg").classList.remove("isVisible")
-})
+    delete(){
+        let lenOfCurrentOperand = this.currentOperand.length
+        this.currentOperand = this.currentOperand.slice(0, lenOfCurrentOperand-1)
+    }
 
-const createTable = ()=>{
-    let data = ''
-    let library = window.localStorage.getItem("library");
-    library = JSON.parse(library)
-    if(library != null){
-    library.map((item,i)=>{
-        data += '<tr>'
-        for(x in item){
-            data += `<td>${item[x]}</td>`
+    append(number){
+        if(number === "." && this.currentOperand.includes('.')) return
+        this.currentOperand = this.currentOperand.toString() + number.toString();
+        
+    }
+
+    chooseOperation(operation){
+        if(this.currentOperand === ''){
+            this.operation = operation
+            return
         }
-        data += `<td><button onclick="deleteItem(${i})" >Delete</button></td>
-                </tr>`
-    })
-    let theTable = `<table>
-    <tr>
-      <th>Title</th>
-      <th>Author</th>
-      <th>Pages</th>
-      <th>Read</th>
-    </tr>
-    <tr>
-      ${data}
-    </tr>
-  </table>`
-  document.getElementById("author").innerHTML = theTable
+        if(this.currentOperand != '' && this.operation == '=' ){
+            this.operation = operation
+            this.currentOperand = ''
+        }
+        if(this.operation === undefined)
+        // console.log(this.operation === undefined)
+        this.operation = operation
+        this.compute();
+        this.currentOperand = ''
+        this.operation = operation
+    }
+    getResultByEqual(){
+        if(this.operation === '=') {
+            this.currentOperand = ''
+            return
+        }
+        this.compute()
+        this.operation = '='
+    }
+
+    compute(){
+        if(this.previousOperand == ''){
+        this.previousOperand = this.currentOperand;
+        return
+        }
+        else{
+        let computation
+        let firstNumber = parseFloat(this.previousOperand)
+        let secondNumber = parseFloat(this.currentOperand)
+        if(isNaN(secondNumber)) return
+        switch(this.operation){
+            case '+':
+                computation = firstNumber + secondNumber
+                break;
+            case '-':
+                computation = firstNumber - secondNumber
+                break;
+            case '*':
+                computation = firstNumber * secondNumber
+                break;
+            case '/':
+                computation = firstNumber / secondNumber
+                break; 
+            default:
+                return
+        }
+        this.previousOperand = computation
+        this.currentOperand = ''
+        }
+
+    }
+
+    updateOutput(){
+        this.currentTextOperand.innerText = this.currentOperand;
+        if(this.operation === undefined){
+        this.previousTextOperand.innerText = this.previousOperand
+        }
+        else{
+        this.previousTextOperand.innerText = this.previousOperand + this.operation;
+        }
     }
 }
-//For delete Operation
-var deleteItem = (bookValue)=>{
-  //delete the item from the array where index is bookValue(bookvalue is set while table creation)
-  //copy and concat the array
-  let library = window.localStorage.getItem("library");
-  library = JSON.parse(library)
-  let preBooks = library.slice(0,bookValue)
-  let postBooks = library.slice(bookValue+1)
-  let newLibrary = preBooks.concat(postBooks)
-  newLibrary = JSON.stringify(newLibrary)
-  window.localStorage.setItem("library",newLibrary);
-  // console.log(allObjects)
-  createTable();
-}
-createTable();
-   
 
+let previousOperandButton = document.querySelector('[data-previous-operand]')
+let currenOperandButton = document.querySelector('[data-current-operand]')
+let operationButtons = document.querySelectorAll('[data-operation]')
+let numberButtons = document.querySelectorAll('[data-numbers]')
+let deleteButton = document.querySelector('[data-delete]')
+let clearButton = document.querySelector('[data-all-clear]')
+let equalButton = document.querySelector('[data-equals]')
 
+let calculator = new Calculate(previousOperandButton, currenOperandButton);
+numberButtons.forEach(button=>{
+    button.addEventListener('click', ()=>{
+        calculator.append(button.innerText);
+        calculator.updateOutput();
+    })
+})
+operationButtons.forEach(button=>{
+    button.addEventListener('click', ()=>{
+        calculator.chooseOperation(button.innerText);
+        calculator.updateOutput();
+    })
+})
+equalButton.addEventListener('click', ()=>{
+    calculator.getResultByEqual();
+    calculator.updateOutput();
+})
+clearButton.addEventListener('click', ()=>{
+    calculator.clear();
+    calculator.updateOutput();
+})
+deleteButton.addEventListener('click', ()=>{
+    calculator.delete();
+    calculator.updateOutput();
+})
