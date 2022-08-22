@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/worldOfRecipe/static/css/main.e210e9b8.css",
+    "main.js": "/worldOfRecipe/static/js/main.55b55f3c.js",
+    "index.html": "/worldOfRecipe/index.html",
+    "main.e210e9b8.css.map": "/worldOfRecipe/static/css/main.e210e9b8.css.map",
+    "main.55b55f3c.js.map": "/worldOfRecipe/static/js/main.55b55f3c.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e210e9b8.css",
+    "static/js/main.55b55f3c.js"
+  ]
+}
